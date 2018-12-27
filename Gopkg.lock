@@ -2,12 +2,15 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:701c9bf4093bc0c05c62e699bf957d6dc738b03d28cd92d0cecd95092c7e3b3b"
-  name = "github.com/functionalfoundry/graphqlws"
-  packages = ["."]
+  digest = "1:38ec74012390146c45af1f92d46e5382b50531247929ff3a685d2b2be65155ac"
+  name = "github.com/gomodule/redigo"
+  packages = [
+    "internal",
+    "redis",
+  ]
   pruneopts = "UT"
-  revision = "4a19181eb54fa93f0fcece2df171409a755b37d8"
+  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
@@ -46,12 +49,41 @@
   version = "v0.7.7"
 
 [[projects]]
+  digest = "1:cd94703e278a88f7c4ffd260a7c9923e119bac3431b8ffa88940bcf298a7925d"
+  name = "github.com/jamillosantos/handler"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f4eac036ab0d74cfd97a5e4c9460064a6316eb4f"
+  version = "v0.2.3"
+
+[[projects]]
   digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
   pruneopts = "UT"
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:b9507ff89671f2e2280604be4f4ba35c25d2fb04787738abad4d486d065b1240"
+  name = "github.com/lab259/graphql"
+  packages = [
+    ".",
+    "gqlerrors",
+    "language/ast",
+    "language/parser",
+  ]
+  pruneopts = "UT"
+  revision = "08943645bf265d192b32f2100cdff2428f7ae7c5"
+  version = "v0.7.7"
+
+[[projects]]
+  branch = "master"
+  digest = "1:746b00f5160a6fb1578362a153dd22ede6c9ee45d42b8f75c8fde4f7235e1ffe"
+  name = "github.com/lab259/graphqlws"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "aabe9610fb7754aa14bcda924388cf1ffbe4dc20"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -76,6 +108,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "9520e82c474b0a04dd04f8a40959027271bab992"
+
+[[projects]]
+  digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
+  name = "github.com/rs/cors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9a47f48565a795472d43519dd49aac781f3034fb"
+  version = "v1.6.0"
 
 [[projects]]
   digest = "1:69b1cc331fca23d702bd72f860c6a647afd0aa9fcbc1d0659b1365e26546dd70"
@@ -110,11 +150,21 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "4d1cda033e0619309c606fc686de3adcf599539e"
+  revision = "074acd46bca67915925527c07849494d115e7c43"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = ["github.com/functionalfoundry/graphqlws"]
+  input-imports = [
+    "github.com/gomodule/redigo/redis",
+    "github.com/gorilla/websocket",
+    "github.com/jamillosantos/handler",
+    "github.com/lab259/graphql",
+    "github.com/lab259/graphql/language/ast",
+    "github.com/lab259/graphql/language/parser",
+    "github.com/lab259/graphqlws",
+    "github.com/rs/cors",
+    "github.com/sirupsen/logrus",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
