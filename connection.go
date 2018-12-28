@@ -110,13 +110,13 @@ func (conn *redisConnection) startSubscriptionRedisConn(subscription graphqlws.S
 
 type redisConnectionFactory struct {
 	schema *graphql.Schema
-	pool   *redis.Pool
+	pool   RedisPool
 	config graphqlws.ConnectionConfig
 }
 
 // NewRedisConnectionCreator will return a function that creates connections
 // based on the `redis.Pool`.
-func NewRedisConnectionCreator(schema *graphql.Schema, redisPool *redis.Pool, config graphqlws.ConnectionConfig) graphqlws.ConnectionFactory {
+func NewRedisConnectionCreator(schema *graphql.Schema, redisPool RedisPool, config graphqlws.ConnectionConfig) graphqlws.ConnectionFactory {
 	return &redisConnectionFactory{
 		schema: schema,
 		pool:   redisPool,
@@ -125,7 +125,11 @@ func NewRedisConnectionCreator(schema *graphql.Schema, redisPool *redis.Pool, co
 }
 
 func (factory *redisConnectionFactory) Create(wsConn *websocket.Conn, handlers graphqlws.ConnectionEventHandlers) graphqlws.Connection {
-	redisConn := factory.pool.Get()
+	redisConn, err := factory.pool.GetConn()
+	if err != nil {
+		// TODO Decide what to do ...
+		panic(fmt.Sprintf("not implemented: %s", redisConn.Err().Error()))
+	}
 	if redisConn.Err() != nil {
 		// TODO Decide what to do ...
 		panic(fmt.Sprintf("not implemented: %s", redisConn.Err().Error()))

@@ -46,6 +46,8 @@ func main() {
 		panic("wrong string got from redis test")
 	}
 
+	redisPool := gqlwsredis.NewRedisPool(pool)
+
 	log.Infoln("Redis initialized")
 
 	users := make(map[string]*User)
@@ -194,7 +196,7 @@ func main() {
 	}
 
 	// Create subscription manager and GraphQL WS handler
-	subscriptionManager = gqlwsredis.NewRedisSubscriptionManager(&schema, gqlwsredis.NewRedisPool(pool), log.New())
+	subscriptionManager = gqlwsredis.NewRedisSubscriptionManager(&schema, redisPool, log.New())
 
 	publish := func(topic graphqlws.Topic, data interface{}) {
 		dataArr, err := json.Marshal(data)
@@ -221,7 +223,7 @@ func main() {
 		publish(graphqlws.StringTopic("onMessage"), message)
 	}
 
-	connFactory := gqlwsredis.NewRedisConnectionCreator(&schema, pool, graphqlws.ConnectionConfig{
+	connFactory := gqlwsredis.NewRedisConnectionCreator(&schema, redisPool, graphqlws.ConnectionConfig{
 		Authenticate: func(token string) (interface{}, error) {
 			if token == "Anonymous" {
 				return nil, errors.New("forbidden")
