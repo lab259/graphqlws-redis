@@ -10,16 +10,20 @@ import (
 	"strings"
 )
 
+type RedisPool interface {
+	GetConn() (redis.Conn, error)
+}
+
 // redisSubscriptionManager implements the `graphqlws.SubscriptionManager` for
 // the redis PubSub system.
 type redisSubscriptionManager struct {
 	schema *graphql.Schema
-	pool   *redis.Pool
+	pool   RedisPool
 	logger *log.Logger
 }
 
 // NewRedisSubscriptionManager
-func NewRedisSubscriptionManager(schema *graphql.Schema, pool *redis.Pool, logger *log.Logger) graphqlws.SubscriptionManager {
+func NewRedisSubscriptionManager(schema *graphql.Schema, pool RedisPool, logger *log.Logger) graphqlws.SubscriptionManager {
 	return &redisSubscriptionManager{
 		schema: schema,
 		pool:   pool,
@@ -90,8 +94,12 @@ func (m *redisSubscriptionManager) CreateSubscriptionSubscriber(subscription gra
 }
 
 func (m *redisSubscriptionManager) Publish(topic graphqlws.Topic, data interface{}) error {
-	conn := m.pool.Get()
-	_, err := conn.Do("PUBLISH", topic, data)
+	conn, err := m.pool.GetConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	_, err = conn.Do("PUBLISH", topic, data)
 	m.logger.WithField("topic", topic).WithField("data", data).Infoln("publishing to topic")
 	return err
 }
@@ -101,14 +109,17 @@ func (m *redisSubscriptionManager) Subscribe(subscriber graphqlws.Subscriber) er
 	if !ok {
 		return errors.New("the conn is not a `*redisConnection`")
 	}
-	rConn := m.pool.Get()
+	rConn, err := m.pool.GetConn()
+	if err != nil {
+		return err
+	}
 	psConn := redis.PubSubConn{Conn: rConn}
 	topics := subscriber.Topics()
 	channels := make([]interface{}, len(topics))
 	for i, topic := range topics {
 		channels[i] = topic
 	}
-	err := psConn.Subscribe(channels...)
+	err = psConn.Subscribe(channels...)
 	log.Infoln("Subscribing to ", channels)
 	if err != nil {
 		return err
