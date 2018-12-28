@@ -10,8 +10,27 @@ import (
 	"strings"
 )
 
+// RedisPool is an interface to allow future implementation for obtaining a
+// connection from a redis pool of the redigo library.
 type RedisPool interface {
 	GetConn() (redis.Conn, error)
+}
+
+type redisPool struct {
+	pool *redis.Pool
+}
+
+// NewRedisPool create a new RedisPool (from the default implementation) and
+// returns it, ready to be used.
+func NewRedisPool(pool *redis.Pool) RedisPool {
+	return &redisPool{
+		pool: pool,
+	}
+}
+
+// GetConn returns a new `redis.Conn` from the redigo pool.
+func (rp *redisPool) GetConn() (redis.Conn, error) {
+	return rp.pool.Get(), nil
 }
 
 // redisSubscriptionManager implements the `graphqlws.SubscriptionManager` for

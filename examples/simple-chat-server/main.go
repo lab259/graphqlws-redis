@@ -194,7 +194,7 @@ func main() {
 	}
 
 	// Create subscription manager and GraphQL WS handler
-	subscriptionManager = gqlwsredis.NewRedisSubscriptionManager(&schema, pool, log.New())
+	subscriptionManager = gqlwsredis.NewRedisSubscriptionManager(&schema, gqlwsredis.NewRedisPool(pool), log.New())
 
 	publish := func(topic graphqlws.Topic, data interface{}) {
 		dataArr, err := json.Marshal(data)
