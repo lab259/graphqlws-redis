@@ -1,7 +1,6 @@
 package gqlwsredis
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
@@ -92,12 +91,8 @@ func (m *redisSubscriptionManager) CreateSubscriptionSubscriber(subscription gra
 
 func (m *redisSubscriptionManager) Publish(topic graphqlws.Topic, data interface{}) error {
 	conn := m.pool.Get()
-	d, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	_, err = conn.Do("PUBLISH", topic, d)
-	m.logger.WithField("topic", topic).WithField("data", d).Infoln("publishing to topic")
+	_, err := conn.Do("PUBLISH", topic, data)
+	m.logger.WithField("topic", topic).WithField("data", data).Infoln("publishing to topic")
 	return err
 }
 

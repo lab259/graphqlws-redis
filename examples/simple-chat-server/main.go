@@ -131,7 +131,7 @@ func main() {
 						Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
 							userData, ok := p.Context.Value("onJoin").([]byte)
 							if !ok {
-								return nil, errors.New("could not get the data")
+								return nil, nil
 							}
 							var user User
 							err := json.Unmarshal(userData, &user)
@@ -151,7 +151,7 @@ func main() {
 						Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
 							userData, ok := p.Context.Value("onLeft").([]byte)
 							if !ok {
-								return nil, errors.New("could not get the data")
+								return nil, nil
 							}
 							var user User
 							err := json.Unmarshal(userData, &user)
@@ -196,26 +196,29 @@ func main() {
 	// Create subscription manager and GraphQL WS handler
 	subscriptionManager = gqlwsredis.NewRedisSubscriptionManager(&schema, pool, log.New())
 
-	// Sends this to all subscriptions
-	broadcastJoin := func(user *User) {
-		err := subscriptionManager.Publish(graphqlws.StringTopic("onJoin"), user)
+	publish := func(topic graphqlws.Topic, data interface{}) {
+		dataArr, err := json.Marshal(data)
+		if err != nil {
+			log.Errorln(err.Error())
+			return
+		}
+		err = subscriptionManager.Publish(topic, dataArr)
 		if err != nil {
 			log.Errorln(err.Error())
 		}
+	}
+
+	// Sends this to all subscriptions
+	broadcastJoin := func(user *User) {
+		publish(graphqlws.StringTopic("onJoin"), user)
 	}
 
 	broadcastLeft := func(user *User) {
-		err := subscriptionManager.Publish(graphqlws.StringTopic("onLeft"), user)
-		if err != nil {
-			log.Errorln(err.Error())
-		}
+		publish(graphqlws.StringTopic("onLeft"), user)
 	}
 
 	broadcastMessage = func(message *Message) {
-		err := subscriptionManager.Publish(graphqlws.StringTopic("onMessage"), message)
-		if err != nil {
-			log.Errorln(err.Error())
-		}
+		publish(graphqlws.StringTopic("onMessage"), message)
 	}
 
 	connFactory := gqlwsredis.NewRedisConnectionCreator(&schema, pool, graphqlws.ConnectionConfig{
