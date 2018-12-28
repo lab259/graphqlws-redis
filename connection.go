@@ -11,6 +11,8 @@ import (
 	"io"
 )
 
+const CONNECTION = "graphqlws-connection"
+
 type redisConnection struct {
 	manager          graphqlws.SubscriptionManager
 	conn             graphqlws.Connection
@@ -61,6 +63,7 @@ func (conn *redisConnection) readRedis(subscription graphqlws.SubscriptionInterf
 			logger.Infoln("message received", string(response.Data))
 			// In case a messages arrives
 			ctx := context.WithValue(context.Background(), response.Channel, response.Data)
+			ctx = context.WithValue(ctx, CONNECTION, conn)
 			params := graphql.ExecuteParams{
 				Schema:        *conn.schema,
 				AST:           subscription.GetDocument(),
