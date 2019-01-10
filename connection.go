@@ -140,6 +140,7 @@ func (factory *redisConnectionFactory) Create(wsConn *websocket.Conn, handlers g
 		schema:           factory.schema,
 		redisConnections: make(map[string]*redis.PubSubConn, 5),
 		conn: graphqlws.NewConnection(wsConn, graphqlws.ConnectionConfig{
+			ReadLimit: factory.config.ReadLimit,
 			EventHandlers: graphqlws.ConnectionEventHandlers{
 				Close: func(_ graphqlws.Connection) {
 					if factory.config.EventHandlers.Close != nil {

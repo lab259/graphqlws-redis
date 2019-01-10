@@ -224,6 +224,7 @@ func main() {
 	}
 
 	connFactory := gqlwsredis.NewRedisConnectionCreator(&schema, redisPool, graphqlws.ConnectionConfig{
+		ReadLimit: 4096 * 2,
 		Authenticate: func(token string) (interface{}, error) {
 			if token == "Anonymous" {
 				return nil, errors.New("forbidden")
