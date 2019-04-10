@@ -3,12 +3,13 @@ package gqlwsredis
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/websocket"
 	"github.com/lab259/graphql"
 	"github.com/lab259/graphqlws"
 	log "github.com/sirupsen/logrus"
-	"io"
 )
 
 const CONNECTION = "graphqlws-connection"
@@ -165,7 +166,8 @@ func (factory *redisConnectionFactory) Create(wsConn *websocket.Conn, handlers g
 					return handlers.StartOperation(rConn, subscriptionID, payload)
 				},
 			},
-			Authenticate: factory.config.Authenticate,
+			Authenticate:           factory.config.Authenticate,
+			ControlMessageHandlers: factory.config.ControlMessageHandlers,
 		}),
 	}
 	return rConn
