@@ -3,12 +3,13 @@ package gqlwsredis
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/websocket"
 	"github.com/lab259/graphql"
 	"github.com/lab259/graphqlws"
 	log "github.com/sirupsen/logrus"
-	"io"
 )
 
 const CONNECTION = "graphqlws-connection"
@@ -142,11 +143,21 @@ func (factory *redisConnectionFactory) Create(wsConn *websocket.Conn, handlers g
 		conn: graphqlws.NewConnection(wsConn, graphqlws.ConnectionConfig{
 			ReadLimit: factory.config.ReadLimit,
 			EventHandlers: graphqlws.ConnectionEventHandlers{
+				Init: func(_ graphqlws.Connection) {
+					if factory.config.EventHandlers.Init != nil {
+						factory.config.EventHandlers.Init(rConn)
+					}
+					if handlers.Init != nil {
+						handlers.Init(rConn)
+					}
+				},
 				Close: func(_ graphqlws.Connection) {
 					if factory.config.EventHandlers.Close != nil {
 						factory.config.EventHandlers.Close(rConn)
 					}
-					handlers.Close(rConn)
+					if handlers.Close != nil {
+						handlers.Close(rConn)
+					}
 					for subscriptionID, redisPubSubConn := range rConn.redisConnections {
 						redisPubSubConn.Close()
 						log.WithField("connID", rConn.ID()).WithField("subscription", subscriptionID).Infoln("set running = false")
@@ -156,16 +167,25 @@ func (factory *redisConnectionFactory) Create(wsConn *websocket.Conn, handlers g
 					if factory.config.EventHandlers.StopOperation != nil {
 						factory.config.EventHandlers.StopOperation(rConn, subscriptionID)
 					}
-					handlers.StopOperation(rConn, subscriptionID)
+					if handlers.StopOperation != nil {
+						handlers.StopOperation(rConn, subscriptionID)
+					}
 				},
 				StartOperation: func(_ graphqlws.Connection, subscriptionID string, payload *graphqlws.StartMessagePayload) []error {
 					if factory.config.EventHandlers.StartOperation != nil {
-						factory.config.EventHandlers.StartOperation(rConn, subscriptionID, payload)
+						errs := factory.config.EventHandlers.StartOperation(rConn, subscriptionID, payload)
+						if len(errs) > 0 {
+							return errs
+						}
 					}
-					return handlers.StartOperation(rConn, subscriptionID, payload)
+					if handlers.StartOperation != nil {
+						return handlers.StartOperation(rConn, subscriptionID, payload)
+					}
+					return nil
 				},
 			},
-			Authenticate: factory.config.Authenticate,
+			Authenticate:           factory.config.Authenticate,
+			ControlMessageHandlers: factory.config.ControlMessageHandlers,
 		}),
 	}
 	return rConn
